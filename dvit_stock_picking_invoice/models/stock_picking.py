@@ -44,12 +44,13 @@ class Picking(models.Model):
 
 
         for obj in self:
+            pur = obj.purchase_order
+            sal = obj.sale_order
             # Vendor Refund
             if obj.location_dest_id.usage == 'supplier':
                 global inv_id
                 i_line_id=[]
-                pur=obj.purchase_order
-                sal=obj.sale_order
+
                 for i in pur.order_line:
                     accounts = i.product_id.product_tmpl_id.get_product_accounts()
                     line={
