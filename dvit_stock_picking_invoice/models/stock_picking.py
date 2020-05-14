@@ -62,8 +62,7 @@ class Picking(models.Model):
                     'account_id': accounts.get('stock_input') and accounts['stock_input'].id or \
                                   accounts['expense'].id,
                     'quantity':i.product_uom_qty,
-                    # 'uom_id':i.product_uom.id,
-                    }
+                    'product_uom_id': i.product_uom.id,                    }
                     i_line_id.append(line)
                 inv_id= invoice_obj.create({
                     'partner_id':obj.partner_id.id,
@@ -74,7 +73,7 @@ class Picking(models.Model):
                     'journal_id':purch_journal_id,
                     'invoice_line_ids':  i_line_id,
                     'purchase_id':self.purchase_order.id,
-                    'invoice_origin':self.purchase_order.name
+                    'invoice_origin':self.purchase_order.name,
                     # 'account_id': obj.partner_id.property_account_payable_id.id,
                  })
                 obj.purchase_order.is_invoice = True
@@ -91,8 +90,7 @@ class Picking(models.Model):
                         'tax_ids': i.taxes_id,
                         'account_id':accounts.get('stock_input') and accounts['stock_input'].id or accounts['expense'].id,
                         'quantity':i.product_uom_qty,
-                        # 'uom_id':i.product_uom.id,
-                        }
+                        'product_uom_id': i.product_uom.id,                        }
                         i_line_id.append(line)
                     inv_id= invoice_obj.create({
                         'partner_id':obj.partner_id.id,
@@ -125,7 +123,7 @@ class Picking(models.Model):
                         'discount':i.discount,
                         'account_id':accounts.get('income') and accounts['income'].id or False,
                         'quantity':i.product_uom_qty,
-                        # 'uom_id': i.product_uom.id,
+                        'product_uom_id': i.product_uom.id,
                          }
                     i_line_id.append(line)
 
@@ -156,8 +154,7 @@ class Picking(models.Model):
                         'discount': i.discount,
                         'account_id':accounts.get('income') and accounts['income'].id or False,
                         'quantity':i.product_uom_qty,
-                        # 'uom_id': i.product_uom.id,
-                        }
+                        'product_uom_id': i.product_uom.id,                        }
                     i_line_id.append(line)
 
                 inv_id= invoice_obj.create({
