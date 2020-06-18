@@ -46,108 +46,76 @@ class hr_salary_rule(models.Model):
     _inherit = 'hr.salary.rule'
     include= fields.Boolean('Include in eg incom tax')
 
-    def _compute_rule(self,localdict):
+    def _compute_rule(self, localdict):
 
         rule = self
-        taxedsalary=0
-        pp=localdict.get('payslip', False)
-        print('pp',pp)
+        taxedsalary = 0
+        pp = localdict.get('payslip', False)
         if localdict.get('payslip', False):
             if self.code == 'ST':
                 taxedsalary = pp.taxedsalary1
-
                 emp = localdict['employee']
                 contract = emp['contract_id'][0]
                 # payslip object
                 payslip = localdict.get('payslip', False)
-                #self.env['hr.contract'].calc_taxed_salary()
-                taxedsalary = taxedsalary #contract['taxedsalary']
+                taxedsalary = taxedsalary
                 payslip_date_from = payslip.date_from
                 payslip_date_to = payslip.date_to
                 tax_year_obj = self.env['egytax.taxyear']
 
                 # get only one tax year object
-                taxyear_ids = tax_year_obj.search( [
+                taxyear_ids = tax_year_obj.search([
                     ('year_from', '<', payslip_date_from), ('year_to', '>', payslip_date_to)], order='id', limit=1,
-                                                  )
-                # tax_year = tax_year_obj.browse(taxyear_ids)
-                print('taxyear',taxyear_ids)
-                print('taxedsalary', taxedsalary)
-
-                # taxedsalary = 16569.48
-                print('taxedsalary', taxedsalary)
+                )
                 taxedsalary = taxedsalary * 12 - taxyear_ids[0].tax_examption
-                print('taxedsalary*12', taxedsalary)
-
                 tax_year_lines_obj = self.env['egytax.taxyear.line']
                 tax_year_lines_ids = tax_year_lines_obj.search([
                     ('taxyear_id', '=', taxyear_ids[0].id)], order='id')
-                # tax_year_lines = tax_year_lines_obj.browse(tax_year_lines_ids)
-                print("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",tax_year_lines_ids)
-                tax = 0.0
-                remain = taxedsalary
 
-                print('tax1', tax)
-                print('remain1',remain)
+                tax = 0.0
+                remain = 0.0
+                tax_line_chk = 0.0
+                tax_line_chk = taxedsalary
+                remain = taxedsalary
 
                 tax_def = 0
                 tax_limit_final = 0
-
+                v_percentage = 0
                 # calculating the tax
                 for line in tax_year_lines_ids:
-                    if (remain < line.lowwer):
-                        continue
-                    if (remain > line.lowwer):
-                        if (remain <= line.upper):
-                            print('taxifshereha', tax, 'line.percentage', line.percentage)
-                            print('remainifshereha', remain, 'line.percentage', line.percentage)
-                            tax = tax + remain * line.percentage / 100
-                            print('tax1shereha', tax,'line.percentage',line.percentage)
-                            remain = 0
-                        else:
+                    if tax_line_chk <= line.upper and tax_line_chk > line.lowwer:
+                        v_percentage = line.percentage
+                    if (taxedsalary > line.lowwer and taxedsalary <= line.upper):
+                        tax = tax + remain * line.percentage / 100
+                        remain = 0
+                    else:
+                        if remain != 0:
                             tax = tax + (line.upper - line.lowwer) * line.percentage / 100
-                            print('taxelseshereha', tax,'line.percentage',line.percentage)
                             remain = remain - (line.upper - line.lowwer)
-                            print('remainlseshereha', remain, 'line.upper', line.upper)
                 if (remain > 0):
                     line = tax_year_lines_ids[-1]
                     tax = tax + remain * line.percentage / 100
-                    print('tax2shereha', tax,'line.percentage',line.percentage)
-     ###### added by marwa osama to apply examption limit
-                print('taxafter all calc old',tax)
+
+                ###### added by marwa osama to apply examption limit related to task DT-39
                 for limit in tax_year_lines_ids:
                     if (limit.lowwer <= 0):
                         limit_taxedsalary = 0
-                        print('taxedsalary afyer - 8000',taxedsalary)
-                        limit_taxedsalary = taxedsalary - limit.upper
-                        print('limit_taxedsalary1-8000 ',limit_taxedsalary)
-                        print("limit_taxedsalary", limit_taxedsalary)
-                        print("line.upper", limit.upper)
+                        limit_taxedsalary = taxedsalary
                     if (limit_taxedsalary <= limit.upper and limit_taxedsalary > limit.lowwer):
                         tax_def = tax * limit.examption_limit / 100
                         tax_limit_final = round((tax - tax_def), 2)
-                        print("examption_limit_percent", limit.examption_limit)
-                        print("tax_def", tax_def)
-                        print("tax_limit_final", tax_limit_final)
-                        print("tax", tax)
-                #changed by marwa osama return tax / 12, -1, 100
-                return tax_limit_final / 12, -1, 100
 
-    ###########################################
+                # changed by marwa osama return tax / 12, -1, 100
+                return tax_limit_final / 12, -1, 100
+            ###########################################
             else:
-                print("elsssssssssssssssss1")
                 amount, qty, rate = super(hr_salary_rule, self)._compute_rule(localdict)
                 if (self.include):
-
                     taxedsalary = taxedsalary + (amount * qty * rate / 100.0)
-                    pp.taxedsalary1+=taxedsalary
-                return  amount, qty, rate
+                    pp.taxedsalary1 += taxedsalary
+                return amount, qty, rate
         else:
-            print("elsssssssssssssssss1222")
-
             amount, qty, rate = super(hr_salary_rule, self)._compute_rule(localdict)
             if (self.include):
-
                 taxedsalary = taxedsalary + (amount * qty * rate / 100.0)
-
-            return  amount, qty, rate
+            return amount, qty, rate

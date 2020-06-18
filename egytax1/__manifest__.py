@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     # related to task INS-23
-    'name': "eggtax",
+    'name': "inetwork egytax",
 
    'author': "Eng.Mohamed Mostafa Kamel at IT-Sys Corp",
     'website': "http://www.yourcompany.com",
