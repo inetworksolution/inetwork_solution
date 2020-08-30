@@ -8,6 +8,7 @@
                 report_type="qweb-pdf"
                 name="invoice_reports.report_invoice_custom"
                 file="invoice_reports.report_invoice_custom"
+                print_report_name="(object._get_report_base_filename())"
                 paperformat="invoice_reports.paperformat_pdf"
         />
 
@@ -62,7 +63,7 @@
                         <th>
                             <td>
                                 <div align="right">
-                                    <span t-field="o.partner_id.commercial_record" align="right"/>
+                                    <span t-field="o.company_id.commercial_record" align="right"/>
                                     <span>|</span>
                                 </div>
                             </td>
@@ -88,7 +89,7 @@
                         <th>
                             <td>
                                 <div align="right">
-                                    <span t-field="o.partner_id.vat" align="right"/>
+                                    <span t-field="o.company_id.vat" align="right"/>
                                     <span>|</span>
                                 </div>
                             </td>
@@ -112,7 +113,7 @@
                         <th>
                             <td>
                                 <div align="right">
-                                    <span t-field="o.partner_id.tax_file" align="right"/>
+                                    <span t-field="o.company_id.tax_file" align="right"/>
                                     <span>|</span>
                                 </div>
                             </td>
@@ -137,7 +138,7 @@
                         <th>
                             <td>
                                 <div align="right">
-                                    <span t-field="o.partner_id.sales_taxes" align="right"/>
+                                    <span t-field="o.company_id.sales_taxes" align="right"/>
                                     <span>|</span>
                                 </div>
                             </td>
@@ -152,7 +153,7 @@
 
                 <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
 
-                <table style="border-color:black;width:100%;hieght:100%;" border="1">
+                <table class="table table-bordered" style="border-color:black;width:100%;hieght:100%;" border="1">
                     <thead style="background-color:#3cb35a;font-size:15px;font-weight:bold;">
                         <tr>
                             <th style="border: 1px solid grey;width:1%;padding: 25px 10px 5px 10px;"
@@ -169,12 +170,12 @@
                                 class="text-center">
                                 <span style="color: #FFFFFF;">QUANTITY</span>
                             </th>
-                            <th style="border: 1px solid grey;width:100px;padding: 10px" align="right">
-                                <span style="color: #FFFFFF;" align="right">UNIT</span>
+                            <th style="border: 1px solid grey;width:100px;padding: 10px" align="left">
+                                <span style="color: #FFFFFF;" align="left">UNIT</span>
                                 <br/>
-                                <span style="color: #FFFFFF;" align="right">PRICE</span>
+                                <span style="color: #FFFFFF;" align="left">PRICE</span>
                             </th>
-                            <th style="border: 1px solid grey;padding: 25px 10px 5px 10px;" align="right">
+                            <th style="border: 1px solid grey;padding: 25px 10px 5px 10px;" align="left">
                                 <span style="color: #FFFFFF;">AMOUNT</span>
                             </th>
                         </tr>
@@ -194,22 +195,22 @@
                                         <t t-esc="i"/>
                                     </td>
                                     <td style="border: 1px solid gray;padding: 5px;" align="left">
-                                        <span t-field="line.product_id.default_code"/>
+                                        <span t-field="line.product_id.name"/>
                                     </td>
                                     <td style="border: 1px solid gray;padding: 5px;" align="left"
                                         name="account_invoice_line_name">
                                         <span t-field="line.name"/>
                                     </td>
-                                    <td style="border: 1px solid gray;padding: 5px;" align="right">
+                                    <td style="border: 1px solid gray;padding: 5px;" align="left">
                                         <span t-field="line.quantity"/>
                                         <span t-field="line.product_uom_id" groups="uom.group_uom"/>
                                     </td>
-                                    <td style="border: 1px solid gray;padding: 5px;" align="right"
+                                    <td style="border: 1px solid gray;padding: 5px;" align="left"
                                         t-attf-class="text-center {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">
                                         <span t-field="line.price_unit"
                                               t-options="{'widget': 'monetary', 'display_currency': line.currency_id}"/>
                                     </td>
-                                    <td style="border: 1px solid gray;padding: 5px;" align="right">
+                                    <td style="border: 1px solid gray;padding: 5px;" align="left">
                                         <span t-field="line.price_subtotal"
                                               groups="account.group_show_line_subtotals_tax_excluded"/>
                                         <span t-field="line.price_total"
@@ -295,23 +296,29 @@
                 </table>
 
                 <!--<br></br>-->
-                <!--<br></br>-->
+                <br></br>
                 <p t-if="o.narration" name="comment">
                     <span style="font-size:12px;color:#3c343c;" t-field="o.narration"/>
                 </p>
-                <span t-if="o.invoice_date_due" style="font-size:13px;font-weight:bold;color:#3c343c;">Payment Due |
-                </span>
-                <span t-field="o.invoice_date_due" style="font-size:14px;color:#3c343c;"/>
+
+                <span t-field="o.company_id.invoice_footer" style="font-size:12px;color:#3c343c;"/>
                 <br></br>
-                <span t-if="o.invoice_payment_term_id" style="font-size:13px;font-weight:bold;color:#3c343c;">Payment
+                <br></br>
+
+                <span  style="font-size:13px;font-weight:bold;color:#3c343c;">Payment Due |
+                </span>
+                <span style="font-size:14px;color:#3c343c;"/>
+                <br></br>
+                <span  style="font-size:13px;font-weight:bold;color:#3c343c;">Payment
                     term |
                 </span>
-                <span t-field="o.invoice_payment_term_id" style="font-size:14px;color:#3c343c;"/>
+                <span style="font-size:14px;color:#3c343c;"/>
                 <br></br>
-                <!--                            <span t-if="o.cst_po_number_id" style="font-size:15px;font-weight:bold">CST PO Number |</span>-->
-                <!--                            <span t-field="o.cst_po_number_id" style="font-size:15px;"/>-->
-                <span t-if="o.fiscal_position_id" style="font-size:13px;font-weight:bold;color:#3c343c;">Site</span>
-                <span t-field="o.fiscal_position_id" style="font-size:14px;color:#3c343c;"/>
+                <span t-if="o.cst_po_number" style="font-size:13px;font-weight:bold">CST PO Number |</span>
+                <span t-field="o.cst_po_number" style="font-size:14px;"/>
+                <br></br>
+                <span t-if="o.site_name" style="font-size:13px;font-weight:bold;color:#3c343c;">Site</span>
+                <span  style="font-size:14px;color:#3c343c;" t-field="o.site_name"/>
                 <br></br>
 
                 <!--                        <p t-if="o.fiscal_position_id.note" name="note">-->
