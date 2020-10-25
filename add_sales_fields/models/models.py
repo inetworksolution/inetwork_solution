@@ -29,7 +29,7 @@ class SaleOrder(models.Model):
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
         res['site_name'] = self.site_name
-        res['cst_po_number'] = self.cst_po_number
+        #res['cst_po_number'] = self.cst_po_number
 
         return res
 
