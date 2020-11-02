@@ -11,6 +11,7 @@
                           decoration-muted="product_qty == theoretical_qty"
                           decoration-bf="is_editable">
                         <field name="company_id" invisible="1"/>
+                        <field name="check_activity_sent" invisible="1"/>
                         <field name="product_tracking" invisible="1"/>
                         <field name="is_editable" invisible="1"/>
                         <field name="outdated" invisible="1"/>
@@ -71,6 +72,9 @@
                         inventory_adjustments_access_right.group_inventory_adjustments_access_right
                     </attribute>
                 </xpath>
+                <xpath expr="//field[@name='location_ids']" position="attributes">
+                    <attribute name="required">True</attribute>
+                </xpath>
                 <xpath expr="//sheet" position="after">
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
@@ -94,6 +98,7 @@
                           decoration-muted="product_qty == theoretical_qty"
                           decoration-bf="is_editable">
                         <field name="company_id" invisible="1"/>
+                        <field name="check_activity_sent" invisible="1"/>
                         <field name="product_tracking" invisible="1"/>
                         <field name="is_editable" invisible="1"/>
                         <field name="outdated" invisible="1"/>
@@ -144,5 +149,12 @@
                 </xpath>
             </field>
         </record>
+
+        <!--<template id="stock_assets_backend" name="custom_mrp_workorder assets" inherit_id="web.assets_backend">-->
+            <!--<xpath expr="." position="inside">-->
+                <!--<script type="text/javascript"-->
+                        <!--src="/inventory_adjustments_access_right/static/js/inventory_validate_button_controller.js"></script>-->
+            <!--</xpath>-->
+        <!--</template>-->
     </data>
 </odoo>

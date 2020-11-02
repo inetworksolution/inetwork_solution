@@ -2,13 +2,70 @@
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, RedirectWarning, ValidationError
+from odoo.tools.float_utils import float_compare
 
 
 class StockInventory(models.Model):
     _name = 'stock.inventory'
     _inherit = ['stock.inventory', 'portal.mixin', 'mail.thread', 'mail.activity.mixin', 'utm.mixin']
 
-    check_activity_sent = fields.Boolean(string='Check Activity Sent', default=False)
+    check_missing = fields.Boolean(default=False, copy=False)
+
+    def action_validate(self):
+        if self.check_missing == False:
+            products = []
+            inventory_obj = self.env['stock.inventory.line'].search([('inventory_id', '=', self.id)])
+            for rec in inventory_obj:
+                products.append(rec.product_id.id)
+            print("LEN", len(set(products)),
+                  len(self.env['product.product'].search([('id', 'not in', products), ('type', '=', 'product')]).ids))
+            ctx = {'default_inventory_id': self.id,
+                   'default_location_ids': self.location_ids.ids,
+                   'default_product_ids': self.env['product.product'].search(
+                       [('id', 'not in', products), ('type', '=', 'product')]).ids or self.env[
+                                              'product.product'].search(
+                       [('id', 'not in', self.line_ids.ids), ('type', '=', 'product')]).ids,
+                   }
+            return {'name': _("Missing Items"),
+                    'type': 'ir.actions.act_window',
+                    'view_mode': 'form',
+                    'views': [(False, 'form')],
+                    'res_model': 'missing.item.wizard',
+                    'target': 'new',
+                    'view_id': self.env.ref('inventory_adjustments_access_right.view_missing_item_wizard').id,
+                    'context': ctx}
+        else:
+            if not self.exists():
+                return
+            self.ensure_one()
+            if not self.user_has_groups('stock.group_stock_manager'):
+                raise UserError(_("Only a stock manager can validate an inventory adjustment."))
+            if self.state != 'confirm':
+                raise UserError(_(
+                    "You can't validate the inventory '%s', maybe this inventory " +
+                    "has been already validated or isn't ready.") % (self.name))
+            inventory_lines = self.line_ids.filtered(lambda l: l.product_id.tracking in ['lot',
+                                                                                         'serial'] and not l.prod_lot_id and l.theoretical_qty != l.product_qty)
+            lines = self.line_ids.filtered(lambda l: float_compare(l.product_qty, 1,
+                                                                   precision_rounding=l.product_uom_id.rounding) > 0 and l.product_id.tracking == 'serial' and l.prod_lot_id)
+            if inventory_lines and not lines:
+                wiz_lines = [(0, 0, {'product_id': product.id, 'tracking': product.tracking}) for product in
+                             inventory_lines.mapped('product_id')]
+                wiz = self.env['stock.track.confirmation'].create(
+                    {'inventory_id': self.id, 'tracking_line_ids': wiz_lines})
+                return {
+                    'name': _('Tracked Products in Inventory Adjustment'),
+                    'type': 'ir.actions.act_window',
+                    'view_mode': 'form',
+                    'views': [(False, 'form')],
+                    'res_model': 'stock.track.confirmation',
+                    'target': 'new',
+                    'res_id': wiz.id,
+                }
+            self._action_done()
+            self.line_ids._check_company()
+            self._check_company()
+            return True
 
     def action_open_inventory_lines(self):
         self.ensure_one()
@@ -44,17 +101,41 @@ class StockInventory(models.Model):
         action['domain'] = domain
         return action
 
+        # @api.model
+        # def cron_activity_stock_inventory(self):
+        #     lines = self.search([('state', '=', 'confirm')])
+        #     users = self.env['res.users'].search([])
+        #     for rec in lines:
+        #         for user in users:
+        #             if not rec.check_activity_sent and user.has_group(
+        #                     'inventory_adjustments_access_right.group_inventory_adjustments_access_right') and not user.has_group(
+        #                 'base.group_system'):
+        #                 rec.activity_schedule(
+        #                     'inventory_adjustments_access_right.schdule_activity_stock_inventory_manager_id',
+        #                     user_id=user.id,
+        #                     summary='Inventory Adjustment' + ' ' + str(rec.name) + ' ' + 'still not validated')
+        #                 rec.check_activity_sent = True
+
+
+class StockInventoryLine(models.Model):
+    _inherit = 'stock.inventory.line'
+    check_activity_sent = fields.Boolean(string='Check Activity Sent', default=False)
+
     @api.model
-    def cron_activity_stock_inventory(self):
-        lines = self.search([('state', '=', 'confirm')])
+    def create(self, vals):
+        res = super(StockInventoryLine, self).create(vals)
         users = self.env['res.users'].search([])
-        for rec in lines:
+        if vals.get('inventory_id'):
+            inventory_obj = self.env['stock.inventory'].browse(vals.get('inventory_id'))
             for user in users:
-                if not rec.check_activity_sent and user.has_group(
+                if res.check_activity_sent == False and user.has_group(
                         'inventory_adjustments_access_right.group_inventory_adjustments_access_right') and not user.has_group(
                     'base.group_system'):
-                    rec.activity_schedule(
+                    inventory_obj.activity_schedule(
                         'inventory_adjustments_access_right.schdule_activity_stock_inventory_manager_id',
                         user_id=user.id,
-                        summary='Inventory Adjustment' + ' ' + str(rec.name) + ' ' + 'still not validated')
-                    rec.check_activity_sent = True
+                        summary='Inventory Adjustment' + ' ' + str(
+                            inventory_obj.name) + ' ' + 'still not validated')
+                    vals['check_activity_sent'] = True
+
+        return res

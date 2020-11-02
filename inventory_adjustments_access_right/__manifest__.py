@@ -12,6 +12,7 @@
             'security/security.xml',
             'views/stock_inventory.xml',
             'views/activity_schedule.xml',
+            'wizard/missing_item_wizard_view.xml',
     ],
     'test': [
     ],
