@@ -149,12 +149,5 @@
                 </xpath>
             </field>
         </record>
-
-        <!--<template id="stock_assets_backend" name="custom_mrp_workorder assets" inherit_id="web.assets_backend">-->
-            <!--<xpath expr="." position="inside">-->
-                <!--<script type="text/javascript"-->
-                        <!--src="/inventory_adjustments_access_right/static/js/inventory_validate_button_controller.js"></script>-->
-            <!--</xpath>-->
-        <!--</template>-->
     </data>
 </odoo>

@@ -10,7 +10,7 @@ class MissingItemWizard(models.TransientModel):
     _name = "missing.item.wizard"
 
     inventory_id = fields.Many2one('stock.inventory', string="Inventory Adjustment")
-    line_ids = fields.Many2many('stock.inventory.line', string='Inventories', compute='compute_inventory_line_ids')
+    line_ids = fields.Many2many('product.product', string='Inventories Products', compute='compute_inventory_line_ids')
     product_ids = fields.Many2many('product.product', string="Missing Items", required=True,
                                    domain="[('id', 'not in', line_ids), ('type', '=', 'product')]")
     location_ids = fields.Many2many('stock.location', string="Locations")
@@ -21,12 +21,13 @@ class MissingItemWizard(models.TransientModel):
         inventory_obj = self.env['stock.inventory.line'].search([('inventory_id', '=', self.inventory_id.id)])
         for rec in inventory_obj:
             products.append(rec.product_id.id)
+        print("Len Product",len(products))
         self.line_ids = [(6, 0, products)]
 
     def create_inventory_adjustment_for_missing(self):
         active_record = self.env.context.get('active_ids', [])
         record = self.env['stock.inventory'].browse(active_record)
-        record.action_validate()
+        # record.action_validate()
         inventory_adjustment = self.env['stock.inventory'].create({
             'name': str(self.inventory_id.name) + ":" + 'Inventory For Missing Items',
         })

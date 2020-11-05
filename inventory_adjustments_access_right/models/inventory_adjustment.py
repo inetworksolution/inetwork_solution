@@ -22,10 +22,7 @@ class StockInventory(models.Model):
             ctx = {'default_inventory_id': self.id,
                    'default_location_ids': self.location_ids.ids,
                    'default_product_ids': self.env['product.product'].search(
-                       [('id', 'not in', products), ('type', '=', 'product')]).ids or self.env[
-                                              'product.product'].search(
-                       [('id', 'not in', self.line_ids.ids), ('type', '=', 'product')]).ids,
-                   }
+                       [('id', 'not in', products), ('type', '=', 'product')]).ids, }
             return {'name': _("Missing Items"),
                     'type': 'ir.actions.act_window',
                     'view_mode': 'form',
@@ -100,21 +97,6 @@ class StockInventory(models.Model):
         action['context'] = context
         action['domain'] = domain
         return action
-
-        # @api.model
-        # def cron_activity_stock_inventory(self):
-        #     lines = self.search([('state', '=', 'confirm')])
-        #     users = self.env['res.users'].search([])
-        #     for rec in lines:
-        #         for user in users:
-        #             if not rec.check_activity_sent and user.has_group(
-        #                     'inventory_adjustments_access_right.group_inventory_adjustments_access_right') and not user.has_group(
-        #                 'base.group_system'):
-        #                 rec.activity_schedule(
-        #                     'inventory_adjustments_access_right.schdule_activity_stock_inventory_manager_id',
-        #                     user_id=user.id,
-        #                     summary='Inventory Adjustment' + ' ' + str(rec.name) + ' ' + 'still not validated')
-        #                 rec.check_activity_sent = True
 
 
 class StockInventoryLine(models.Model):
