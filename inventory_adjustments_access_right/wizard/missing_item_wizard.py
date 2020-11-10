@@ -36,7 +36,7 @@ class MissingItemWizard(models.TransientModel):
             if self.location_ids:
                 inventory_adjustment.write({
                     'line_ids': [
-                        (0, 0, {'product_id': product.id, 'product_qty': 1,
+                        (0, 0, {'product_id': product.id, 'product_qty': 0,
                                 'location_id': self.location_ids[0].id or self.env['stock.location'].search(
                                     [('usage', 'in', ['internal', 'transit'])], limit=1).id, 'is_editable': True,
                                 }),
@@ -45,7 +45,7 @@ class MissingItemWizard(models.TransientModel):
             else:
                 inventory_adjustment.write({
                     'line_ids': [
-                        (0, 0, {'product_id': product.id, 'product_qty': 1,
+                        (0, 0, {'product_id': product.id, 'product_qty': 0,
                                 'location_id': self.env['stock.location'].search(
                                     [('usage', 'in', ['internal', 'transit'])], limit=1).id, 'is_editable': True,
                                 }),
