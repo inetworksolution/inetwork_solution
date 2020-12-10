@@ -20,7 +20,16 @@ class MissingItemWizard(models.TransientModel):
         products = []
         inventory_obj = self.env['stock.inventory.line'].search([('inventory_id', '=', self.inventory_id.id)])
         for rec in inventory_obj:
-            products.append(rec.product_id.id)
+            domain = [
+                ('id', '!=', rec.id),
+                ('product_id', '=', rec.product_id.id),
+                ('location_id', '=', rec.location_id.id),
+                ('partner_id', '=', rec.partner_id.id),
+                ('package_id', '=', rec.package_id.id),
+                ('prod_lot_id', '=', rec.prod_lot_id.id)]
+            existings = self.env['stock.inventory.line'].search_count(domain)
+            if existings:
+                products.append(rec.product_id.id)
         print("Len Product",len(products))
         self.line_ids = [(6, 0, products)]
 
