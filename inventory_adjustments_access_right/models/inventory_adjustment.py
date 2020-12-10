@@ -22,7 +22,7 @@ class StockInventory(models.Model):
                     ('location_id', '=', rec.location_id.id),
                     ('partner_id', '=', rec.partner_id.id),
                     ('package_id', '=', rec.package_id.id),
-                    ('prod_lot_id', '=', rec.prod_lot_id.id)]
+                    ('prod_lot_id', '=', rec.prod_lot_id.id),('inventory_id', '=', rec.inventory_id.id)]
                 existings = self.env['stock.inventory.line'].search_count(domain)
                 if existings:
                    products.append(rec.product_id.id)
