@@ -16,7 +16,8 @@ class StockInventory(models.Model):
             products = []
             inventory_obj = self.env['stock.inventory.line'].search([('inventory_id', '=', self.id)])
             for rec in inventory_obj:
-                domain = [
+                products.append(rec.product_id.id)
+                '''domain = [
                     ('id', '!=', rec.id),
                     ('product_id', '=', rec.product_id.id),
                     ('location_id', '=', rec.location_id.id),
@@ -24,8 +25,7 @@ class StockInventory(models.Model):
                     ('package_id', '=', rec.package_id.id),
                     ('prod_lot_id', '=', rec.prod_lot_id.id),('inventory_id', '=', rec.inventory_id.id)]
                 existings = self.env['stock.inventory.line'].search_count(domain)
-                if existings:
-                   products.append(rec.product_id.id)
+                if existings:'''
             print("LEN", len(set(products)),
                   len(self.env['product.product'].search([('id', 'not in', products), ('type', '=', 'product')]).ids))
             ctx = {'default_inventory_id': self.id,
