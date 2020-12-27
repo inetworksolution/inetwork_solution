@@ -12,8 +12,7 @@ class MissingItemWizard(models.TransientModel):
     inventory_id = fields.Many2one('stock.inventory', string="Inventory Adjustment")
     line_ids = fields.Many2many('product.product', string='Inventories Products', compute='compute_inventory_line_ids')
     product_ids = fields.Many2many('product.product', string="Missing Items", required=True,
-                                   domain="[('id', 'not in', line_ids),('type', '=', 'product')"
-                                          ",('qty_available','>',0),('id', 'in', inventory_id.product_ids.ids)]")
+                                   domain="[('id', 'not in', line_ids),('type', '=', 'product'),('qty_available','>',0)]")
     location_ids = fields.Many2many('stock.location', string="Locations")
 
     @api.depends('inventory_id')
@@ -25,7 +24,8 @@ class MissingItemWizard(models.TransientModel):
             #     if rec.product_id.qty_available <= 0 and rec.product_id not in rec.inventory_id.product_ids.ids:
             #         products.append(rec.product_id.id)
             # else:
-            products.append(rec.product_id.id)
+            if rec.product_id not in rec.inventory_id.product_ids.ids:
+                products.append(rec.product_id.id)
             '''domain = [
                 ('id', '!=', rec.id),
                 ('product_id', '=', rec.product_id.id),
