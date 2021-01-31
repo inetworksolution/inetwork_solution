@@ -10,6 +10,27 @@ class StockInventory(models.Model):
     _inherit = ['stock.inventory', 'portal.mixin', 'mail.thread', 'mail.activity.mixin', 'utm.mixin']
 
     check_missing = fields.Boolean(default=False, copy=False)
+    product_categ_ids = fields.Many2many('product.category', string='Product Category', readonly=True,
+                                         states={'draft': [('readonly', False)]}, )
+    all_product_categ_ids = fields.Many2many('product.category', string='Product Category', readonly=True,
+                                             states={'draft': [('readonly', False)]}, compute='compute_category_ids')
+    product_ids = fields.Many2many(
+        'product.product', string='Products', check_company=True,
+        domain="['|',('categ_id', 'in', product_categ_ids),('categ_id', 'in', all_product_categ_ids) , ('type', '=', 'product'), '|', ('company_id', '=', False), ('company_id', '=', company_id)]",
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        help="Specify Products to focus your inventory on particular Products.")
+
+    @api.depends('product_categ_ids')
+    def compute_category_ids(self):
+        products_categ = []
+        for rec in self:
+            if rec.product_categ_ids:
+                for categ in rec.product_categ_ids:
+                    products_categ.append(categ.id)
+                self.all_product_categ_ids = [(6, 0, products_categ)]
+            else:
+                self.all_product_categ_ids = [(6, 0, self.env['product.category'].search([]).ids)]
 
     def action_validate(self):
         if self.check_missing is False:

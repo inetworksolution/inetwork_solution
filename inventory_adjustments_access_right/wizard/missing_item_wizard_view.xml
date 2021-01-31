@@ -10,11 +10,16 @@
                         <group>
                             <field name="inventory_id" readonly="1" options='{"no_create": True}'/>
                             <field name="line_ids" widget="many2many_tags" options='{"no_create": True}' invisible="1"/>
+                            <field name="product_categ_ids" widget="many2many_tags" options='{"no_create": True}'
+                                   invisible="1"/>
+                            <field name="all_product_categ_ids" widget="many2many_tags" options='{"no_create": True}'
+                                   invisible="1"/>
                             <field name="product_ids" widget="many2many_tags" options='{"no_create": True}'/>
                         </group>
                     </group>
                     <footer>
-                        <button name="create_inventory_adjustment_for_missing" string="Create Inventory Adjustment For Missing Items" type="object"
+                        <button name="create_inventory_adjustment_for_missing"
+                                string="Create Inventory Adjustment For Missing Items" type="object"
                                 class="oe_highlight"/>
                         or
                         <button string="Cancel" class="oe_link" special="cancel"/>
@@ -31,7 +36,7 @@
             <field name="target">new</field>
         </record>
         <!--<menuitem id="menu_wizard_missing_item" name="Missing Items" parent="hr_payroll.menu_hr_payroll_payslips"-->
-                  <!--action="wizard_missing_item_action"-->
-                   <!--sequence="50"/>-->
+        <!--action="wizard_missing_item_action"-->
+        <!--sequence="50"/>-->
     </data>
 </odoo>

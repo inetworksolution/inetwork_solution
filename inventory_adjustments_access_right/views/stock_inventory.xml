@@ -75,6 +75,10 @@
                 <xpath expr="//field[@name='location_ids']" position="attributes">
                     <attribute name="required">True</attribute>
                 </xpath>
+                <xpath expr="//field[@name='product_ids']" position="after">
+                        <field name="all_product_categ_ids" widget="many2many_tags" options='{"no_create": True}' invisible="1"/>
+                        <field name="product_categ_ids" widget="many2many_tags" options='{"no_create": True}'/>
+                </xpath>
                 <xpath expr="//sheet" position="after">
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
